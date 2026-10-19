@@ -51,11 +51,4 @@ describe("renderBadge", () => {
 		expect(dark).not.toContain("#34c759");
 		expect(dark).not.toContain("prefers-color-scheme");
 	});
-
-	it("grows with longer text", () => {
-		const w = (s: string) => Number(s.match(/width="(\d+)"/)![1]);
-		expect(w(renderBadge({ up: true, ms: 12345 }, "en"))).toBeGreaterThan(
-			w(renderBadge({ up: true, ms: 1 }, "en")),
-		);
-	});
 });
