@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>noar · selo de status</title>
+<meta name="description" content="Selo SVG que mostra se um endpoint de health está no ar, para README ou site.">
+<style>
+	:root {
+		--bg: #f5f5f7; --surface: #fff; --fg: #111114; --muted: #6e6e73; --line: #d2d2d7;
+		--button: #e5e5ea; --live: #34c759;
+		color-scheme: light dark;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--bg: #000; --surface: #1c1c1e; --fg: #f5f5f7; --muted: #98989d; --line: #38383a;
+			--button: #2c2c2e; --live: #30d158;
+		}
+	}
+	* { box-sizing: border-box; }
+	body {
+		margin: 0; background: var(--bg); color: var(--fg);
+		font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+	}
+	main { max-width: 640px; margin: 0 auto; padding: 64px 16px; }
+	h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.02em; }
+	h1 span { color: var(--live); }
+	p { color: var(--muted); margin: 0 0 32px; }
+	label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+	input, select {
+		width: 100%; font: inherit; color: inherit; background: var(--surface);
+		border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+	}
+	.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 32px; }
+	.preview {
+		display: flex; align-items: center; justify-content: center; min-height: 88px;
+		background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 32px;
+	}
+	.snippet { margin-bottom: 20px; }
+	.snippet header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+	.snippet header label { margin: 0; }
+	pre {
+		margin: 0; padding: 12px; overflow-x: auto; background: var(--surface);
+		border: 1px solid var(--line); border-radius: 10px;
+		font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+	button {
+		font: inherit; font-size: 13px; color: inherit; background: var(--button);
+		border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer;
+	}
+	footer { margin-top: 48px; font-size: 14px; color: var(--muted); }
+	footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+	<h1><span>●</span> noar</h1>
+	<p>Cole a URL de um endpoint de health. O selo faz um GET nela: resposta 2xx fica verde com a latência; qualquer outra coisa, cinza.</p>
+
+	<label for="url">URL do health</label>
+	<input id="url" type="url" placeholder="https://api.exemplo.com/health" autocomplete="off" spellcheck="false">
+
+	<div class="row">
+		<div>
+			<label for="lang">Idioma</label>
+			<select id="lang"><option value="">Português</option><option value="en">English</option></select>
+		</div>
+		<div>
+			<label for="theme">Tema</label>
+			<select id="theme">
+				<option value="">Automático</option><option value="light">Claro</option><option value="dark">Escuro</option>
+			</select>
+		</div>
+	</div>
+
+	<div class="preview"><img id="badge" src="/badge?url=https%3A%2F%2Fracha.hemk.dev%2Fhealth%2F" alt="status"></div>
+
+	<div class="snippet">
+		<header><label>Markdown</label><button data-copy="md">Copiar</button></header>
+		<pre id="md"></pre>
+	</div>
+	<div class="snippet">
+		<header><label>HTML</label><button data-copy="html">Copiar</button></header>
+		<pre id="html"></pre>
+	</div>
+
+	<footer>Só https e nada de localhost ou IP. Resultado em cache por ~60 s por host. Código gerado com IA. <a href="https://github.com/hemkdev/noar-badge">Código-fonte</a>.</footer>
+</main>
+<script>
+	const $ = (id) => document.getElementById(id);
+	const example = "https://racha.hemk.dev/health/";
+	let timer;
+
+	function badgeUrl() {
+		const params = new URLSearchParams({ url: $("url").value.trim() || example });
+		if ($("lang").value) params.set("lang", $("lang").value);
+		if ($("theme").value) params.set("theme", $("theme").value);
+		return `${location.origin}/badge?${params}`;
+	}
+
+	function update() {
+		const src = badgeUrl();
+		$("badge").src = src;
+		$("md").textContent = `![status](${src})`;
+		$("html").textContent = `<img src="${src.replaceAll("&", "&amp;")}" alt="status">`;
+	}
+
+	$("url").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(update, 500); });
+	$("lang").addEventListener("change", update);
+	$("theme").addEventListener("change", update);
+	document.querySelectorAll("[data-copy]").forEach((button) => {
+		button.addEventListener("click", async () => {
+			await navigator.clipboard.writeText($(button.dataset.copy).textContent);
+			button.textContent = "Copiado";
+			setTimeout(() => (button.textContent = "Copiar"), 1500);
+		});
+	});
+	update();
+</script>
+</body>
+</html>
