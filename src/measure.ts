@@ -1,7 +1,7 @@
 import { guard } from "./guard";
 import type { Status } from "./svg";
 
-export const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 5000;
 export const MAX_HOPS = 3;
 
 // Workers clocks only advance across I/O, which is exactly what is being timed here.

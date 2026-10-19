@@ -89,7 +89,6 @@
 <script>
 	const $ = (id) => document.getElementById(id);
 	const example = "https://racha.hemk.dev/health/";
-	let timer;
 
 	function badgeUrl() {
 		const params = new URLSearchParams({ url: $("url").value.trim() || example });
@@ -105,9 +104,7 @@
 		$("html").textContent = `<img src="${src.replaceAll("&", "&amp;")}" alt="status">`;
 	}
 
-	$("url").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(update, 500); });
-	$("lang").addEventListener("change", update);
-	$("theme").addEventListener("change", update);
+	["url", "lang", "theme"].forEach((id) => $(id).addEventListener("change", update));
 	document.querySelectorAll("[data-copy]").forEach((button) => {
 		button.addEventListener("click", async () => {
 			await navigator.clipboard.writeText($(button.dataset.copy).textContent);
