@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>noar · selo de status</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="description" content="Selo SVG que mostra se um endpoint de health está no ar, para README ou site.">
 <style>
 	:root {
@@ -73,7 +74,7 @@
 		</div>
 	</div>
 
-	<div class="preview"><img id="badge" src="/badge?url=https%3A%2F%2Fracha.hemk.dev%2Fhealth%2F" alt="status"></div>
+	<div class="preview"><img id="badge" src="/badge?url=https://racha.hemk.dev/health/" alt="status"></div>
 
 	<div class="snippet">
 		<header><label>Markdown</label><button data-copy="md">Copiar</button></header>
@@ -91,10 +92,11 @@
 	const example = "https://racha.hemk.dev/health/";
 
 	function badgeUrl() {
-		const params = new URLSearchParams({ url: $("url").value.trim() || example });
-		if ($("lang").value) params.set("lang", $("lang").value);
-		if ($("theme").value) params.set("theme", $("theme").value);
-		return `${location.origin}/badge?${params}`;
+		// Only "&" and "#" inside the target really need escaping; keep ":" and "/" readable.
+		const url = encodeURIComponent($("url").value.trim() || example).replace(/%3A/g, ":").replace(/%2F/g, "/");
+		const lang = $("lang").value ? `&lang=${$("lang").value}` : "";
+		const theme = $("theme").value ? `&theme=${$("theme").value}` : "";
+		return `${location.origin}/badge?url=${url}${lang}${theme}`;
 	}
 
 	function update() {
