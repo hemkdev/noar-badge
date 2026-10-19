@@ -2,7 +2,7 @@ import { guard } from "./guard";
 import { measure } from "./measure";
 import { renderBadge, type Lang, type Status, type Theme } from "./svg";
 
-export const CACHE_TTL = 60;
+const CACHE_TTL = 60;
 
 // The landing page in public/ is served as a static asset before this handler runs.
 export default {
