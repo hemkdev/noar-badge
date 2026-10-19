@@ -1,29 +1,53 @@
-import {
-	env,
-	createExecutionContext,
-	waitOnExecutionContext,
-	SELF,
-} from "cloudflare:test";
-import { describe, it, expect } from "vitest";
+import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import worker from "../src/index";
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
-describe("Hello World worker", () => {
-	it("responds with Hello World! (unit style)", async () => {
-		const request = new IncomingRequest("http://example.com");
-		// Create an empty context to pass to `worker.fetch()`.
-		const ctx = createExecutionContext();
-		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
-		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+async function get(path: string) {
+	const ctx = createExecutionContext();
+	const res = await worker.fetch(new IncomingRequest(`https://status.hemk.dev${path}`), env, ctx);
+	await waitOnExecutionContext(ctx);
+	return res;
+}
+
+const badge = (target: string, extra = "") => `/badge?url=${encodeURIComponent(target)}${extra}`;
+
+afterEach(() => vi.restoreAllMocks());
+
+describe("worker", () => {
+	it("404s outside /badge", async () => {
+		expect((await get("/nope")).status).toBe(404);
 	});
 
-	it("responds with Hello World! (integration style)", async () => {
-		const response = await SELF.fetch("https://example.com");
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it("renders an up badge as uncached svg", async () => {
+		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response("ok"));
+		const res = await get(badge("https://up.example/health"));
+		expect(res.headers.get("content-type")).toBe("image/svg+xml; charset=utf-8");
+		expect(res.headers.get("cache-control")).toBe("no-cache");
+		expect(await res.text()).toContain("no ar ·");
+	});
+
+	it("honors lang and theme", async () => {
+		vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response("ok"));
+		const svg = await (await get(badge("https://lang.example/", "&lang=en&theme=dark"))).text();
+		expect(svg).toContain("online ·");
+		expect(svg).not.toContain("prefers-color-scheme");
+	});
+
+	it.each(["", "?url=http://plain.example/", "?url=https://localhost/"])(
+		"shows unavailable without fetching for /badge%s",
+		async (query) => {
+			const spy = vi.spyOn(globalThis, "fetch");
+			expect(await (await get(`/badge${query}`)).text()).toContain("indisponível");
+			expect(spy).not.toHaveBeenCalled();
+		},
+	);
+
+	it("caches by host, ignoring path and query", async () => {
+		const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("ok"));
+		await get(badge("https://cached.example/a?x=1"));
+		await get(badge("https://cached.example/b?x=2"));
+		expect(spy).toHaveBeenCalledTimes(1);
 	});
 });
