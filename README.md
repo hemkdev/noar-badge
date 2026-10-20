@@ -35,7 +35,7 @@ A 2xx response shows green with the latency. Anything else shows grey `indisponÃ
 
 [![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/&lang=en&theme=dark)](https://racha.hemk.dev)
 
-> **Note:** results are cached for ~60 s per host. `localhost` and IP addresses are rejected. Inside an image, `auto` follows the visitor's OS, not GitHub's theme.
+> **Note:** results are cached for ~60 s per URL, with at most 10 measurements per minute per host. `localhost` and IP addresses are rejected. Inside an image, `auto` follows the visitor's OS, not GitHub's theme.
 
 ## Running locally
 

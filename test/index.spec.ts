@@ -44,10 +44,30 @@ describe("worker", () => {
 		},
 	);
 
-	it("caches by host, ignoring path and query", async () => {
+	it("caches by full url, so one path can't poison another", async () => {
+		const spy = vi
+			.spyOn(globalThis, "fetch")
+			.mockImplementation(async (input) => new Response(null, { status: String(input).includes("/missing") ? 404 : 200 }));
+		await get(badge("https://shared.example/health"));
+		expect(await (await get(badge("https://shared.example/missing"))).text()).toContain("indisponível");
+		expect(await (await get(badge("https://shared.example/health"))).text()).toContain("no ar ·");
+		expect(spy).toHaveBeenCalledTimes(2);
+	});
+
+	it("ignores a trailing dot on the host", async () => {
 		const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("ok"));
-		await get(badge("https://cached.example/a?x=1"));
-		await get(badge("https://cached.example/b?x=2"));
+		await get(badge("https://dot.example/"));
+		await get(badge("https://dot.example./"));
 		expect(spy).toHaveBeenCalledTimes(1);
+	});
+
+	it("serves the last real result once a host's budget is spent", async () => {
+		vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("ok"));
+		await get(badge("https://busy.example/health"));
+		for (let i = 0; i < 10; i++) await get(badge(`https://busy.example/p${i}`));
+		vi.spyOn(Date, "now").mockReturnValue(Date.now() + 61_000);
+		const spy = vi.spyOn(globalThis, "fetch").mockClear().mockResolvedValue(new Response(null, { status: 503 }));
+		expect(await (await get(badge("https://busy.example/health"))).text()).toContain("no ar ·");
+		expect(spy).not.toHaveBeenCalled();
 	});
 });
