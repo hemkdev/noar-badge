@@ -16,7 +16,7 @@ export default {
 		const t = searchParams.get("theme");
 		const theme: Theme = t === "light" || t === "dark" ? t : "auto";
 		const url = guard(searchParams.get("url") ?? "");
-		const status: Status = url ? await cachedMeasure(url, env, ctx) : { up: false };
+		const status: Status = url ? await cachedMeasure(url, env, ctx) : { up: false, invalid: true };
 
 		return new Response(renderBadge(status, lang, theme), {
 			headers: {

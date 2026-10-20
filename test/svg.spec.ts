@@ -11,6 +11,11 @@ describe("badgeText", () => {
 		expect(badgeText({ up: false }, "pt")).toBe("indisponível");
 		expect(badgeText({ up: false }, "en")).toBe("unavailable");
 	});
+
+	it("shows invalid url when nothing was measured", () => {
+		expect(badgeText({ up: false, invalid: true }, "pt")).toBe("url inválida");
+		expect(badgeText({ up: false, invalid: true }, "en")).toBe("invalid url");
+	});
 });
 
 describe("escapeXml", () => {

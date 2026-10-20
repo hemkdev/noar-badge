@@ -1,10 +1,10 @@
 export type Lang = "pt" | "en";
 export type Theme = "auto" | "light" | "dark";
-export type Status = { up: true; ms: number } | { up: false };
+export type Status = { up: true; ms: number } | { up: false; invalid?: true };
 
 const LABELS = {
-	pt: { up: "no ar", down: "indisponível" },
-	en: { up: "online", down: "unavailable" },
+	pt: { up: "no ar", down: "indisponível", invalid: "url inválida" },
+	en: { up: "online", down: "unavailable", invalid: "invalid url" },
 } as const;
 
 const FONT_SIZE = 12;
@@ -34,7 +34,8 @@ export function escapeXml(s: string): string {
 }
 
 export function badgeText(status: Status, lang: Lang): string {
-	return status.up ? `${LABELS[lang].up} · ${Math.round(status.ms)} ms` : LABELS[lang].down;
+	if (status.up) return `${LABELS[lang].up} · ${Math.round(status.ms)} ms`;
+	return status.invalid ? LABELS[lang].invalid : LABELS[lang].down;
 }
 
 export function renderBadge(status: Status, lang: Lang, theme: Theme = "auto"): string {

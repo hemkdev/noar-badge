@@ -23,7 +23,7 @@ Or paste your endpoint at [status.hemk.dev](https://status.hemk.dev) and copy th
 | `lang`    | `pt`    | `pt` or `en` |
 | `theme`   | `auto`  | `auto`, `light` or `dark` |
 
-A 2xx response shows green with the latency. Anything else shows grey `indisponível` / `unavailable`.
+A 2xx response shows green with the latency. Anything else shows grey `indisponível` / `unavailable`. A missing, non-https, localhost or IP target shows grey `url inválida` / `invalid url` without being measured.
 
 ### Example with all parameters:
 

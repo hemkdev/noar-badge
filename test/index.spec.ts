@@ -36,10 +36,10 @@ describe("worker", () => {
 	});
 
 	it.each(["", "?url=http://plain.example/", "?url=https://localhost/"])(
-		"shows unavailable without fetching for /badge%s",
+		"shows invalid url without fetching for /badge%s",
 		async (query) => {
 			const spy = vi.spyOn(globalThis, "fetch");
-			expect(await (await get(`/badge${query}`)).text()).toContain("indisponível");
+			expect(await (await get(`/badge${query}`)).text()).toContain("url inválida");
 			expect(spy).not.toHaveBeenCalled();
 		},
 	);
