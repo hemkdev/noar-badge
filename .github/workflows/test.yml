@@ -15,5 +15,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Generated from wrangler.jsonc, not committed.
+      - run: npx wrangler types
       - run: npx tsc --noEmit
       - run: npx vitest run
