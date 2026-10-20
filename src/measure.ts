@@ -3,6 +3,8 @@ import type { Status } from "./svg";
 
 const TIMEOUT_MS = 5000;
 export const MAX_HOPS = 3;
+// WAFs often 403 a Worker subrequest with no User-Agent, which would read as a false "unavailable".
+const USER_AGENT = { "user-agent": "noar-badge (+https://status.hemk.dev)" };
 
 // Workers clocks only advance across I/O, which is exactly what is being timed here.
 export async function measure(url: URL): Promise<Status> {
@@ -11,7 +13,7 @@ export async function measure(url: URL): Promise<Status> {
 	let target: URL | null = url;
 	try {
 		for (let hop = 0; hop <= MAX_HOPS && target; hop++) {
-			const res = await fetch(target, { redirect: "manual", cache: "no-store", signal });
+			const res = await fetch(target, { redirect: "manual", cache: "no-store", signal, headers: USER_AGENT });
 			await res.body?.cancel();
 			if (res.status >= 200 && res.status < 300) return { up: true, ms: Date.now() - start };
 			const location = res.headers.get("location");
