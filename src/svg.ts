@@ -1,6 +1,23 @@
 export type Lang = "pt" | "en";
 export type Theme = "auto" | "light" | "dark";
 export type Status = { up: true; ms: number } | { up: false; invalid?: true };
+export type Look = {
+	style: "pill" | "flat";
+	size: "sm" | "md" | "lg";
+	label: string;
+	ms: boolean;
+	color?: string;
+	font: "mono" | "sans";
+};
+
+export const DEFAULT_LOOK: Look = { style: "pill", size: "md", label: "", ms: true, font: "mono" };
+export const MAX_LABEL = 24;
+// The badge is laid out once at md and scaled through viewBox, so every size keeps its proportions.
+const SCALE = { sm: 0.85, md: 1, lg: 1.4 };
+const FONTS = {
+	mono: "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",
+	sans: "system-ui,-apple-system,Segoe UI,Roboto,sans-serif",
+};
 
 const LABELS = {
 	pt: { up: "no ar", down: "indisponível", invalid: "url inválida" },
@@ -33,13 +50,22 @@ export function escapeXml(s: string): string {
 	return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-export function badgeText(status: Status, lang: Lang): string {
-	if (status.up) return `${LABELS[lang].up} · ${Math.round(status.ms)} ms`;
-	return status.invalid ? LABELS[lang].invalid : LABELS[lang].down;
+export function badgeText(status: Status, lang: Lang, look: Partial<Look> = {}): string {
+	const { label, ms } = { ...DEFAULT_LOOK, ...look };
+	const state = status.up
+		? ms
+			? `${LABELS[lang].up} · ${Math.round(status.ms)} ms`
+			: LABELS[lang].up
+		: status.invalid
+			? LABELS[lang].invalid
+			: LABELS[lang].down;
+	const name = [...label].slice(0, MAX_LABEL).join("");
+	return name ? `${name} · ${state}` : state;
 }
 
-export function renderBadge(status: Status, lang: Lang, theme: Theme = "auto"): string {
-	const raw = badgeText(status, lang);
+export function renderBadge(status: Status, lang: Lang, theme: Theme = "auto", look: Partial<Look> = {}): string {
+	const { style, size, color, font } = { ...DEFAULT_LOOK, ...look };
+	const raw = badgeText(status, lang, look);
 	const text = escapeXml(raw);
 	// SVG can't measure its own text: fix the width and force glyphs into it with textLength.
 	const textLen = [...raw].length * CHAR_WIDTH;
@@ -47,12 +73,15 @@ export function renderBadge(status: Status, lang: Lang, theme: Theme = "auto"): 
 	const cx = PAD + DOT_R;
 	const cy = HEIGHT / 2;
 	const halo = status.up ? `<circle class="up halo" cx="${cx}" cy="${cy}" r="${DOT_R}"/>` : "";
+	const k = SCALE[size];
+	// Only the "up" green is recolorable: grey must always mean "not on air".
+	const accent = color && /^[0-9a-f]{6}$/i.test(color) ? `.up{fill:#${color}}` : "";
 
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${HEIGHT}" role="img" aria-label="${text}">
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.ceil(width * k)}" height="${Math.ceil(HEIGHT * k)}" viewBox="0 0 ${width} ${HEIGHT}" role="img" aria-label="${text}">
 <title>${text}</title>
-<style>${PALETTE[theme]}${MOTION}</style>
-<rect class="bg" width="${width}" height="${HEIGHT}" rx="${HEIGHT / 2}"/>
+<style>${PALETTE[theme]}${accent}${MOTION}</style>
+<rect class="bg" width="${width}" height="${HEIGHT}" rx="${style === "pill" ? HEIGHT / 2 : 3}"/>
 ${halo}<circle class="${status.up ? "up" : "down"}" cx="${cx}" cy="${cy}" r="${DOT_R}"/>
-<text class="${status.up ? "fg" : "muted"}" x="${TEXT_X}" y="15" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="${FONT_SIZE}" font-weight="500" textLength="${textLen}" lengthAdjust="spacingAndGlyphs">${text}</text>
+<text class="${status.up ? "fg" : "muted"}" x="${TEXT_X}" y="15" font-family="${FONTS[font]}" font-size="${FONT_SIZE}" font-weight="500" textLength="${textLen}" lengthAdjust="spacingAndGlyphs">${text}</text>
 </svg>`;
 }

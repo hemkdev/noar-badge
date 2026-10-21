@@ -18,6 +18,17 @@ describe("badgeText", () => {
 	});
 });
 
+describe("badgeText look", () => {
+	it("prefixes a label, cut at MAX_LABEL characters", () => {
+		expect(badgeText({ up: false }, "en", { label: "racha" })).toBe("racha · unavailable");
+		expect(badgeText({ up: false }, "en", { label: "x".repeat(30) })).toBe(`${"x".repeat(24)} · unavailable`);
+	});
+
+	it("hides latency when ms is off", () => {
+		expect(badgeText({ up: true, ms: 120 }, "pt", { ms: false })).toBe("no ar");
+	});
+});
+
 describe("escapeXml", () => {
 	it("escapes markup characters", () => {
 		expect(escapeXml(`<a href="x">&'`)).toBe("&#60;a href=&#34;x&#34;&#62;&#38;&#39;");
@@ -40,6 +51,28 @@ describe("renderBadge", () => {
 		expect(svg).toContain(`textLength="${12 * CHAR_WIDTH}"`);
 		const width = Number(svg.match(/width="(\d+)"/)![1]);
 		expect(width).toBe(Math.ceil(TEXT_X + 12 * CHAR_WIDTH + 10));
+	});
+
+	it("escapes the label", () => {
+		const svg = renderBadge({ up: false }, "en", "auto", { label: `<script>&"` });
+		expect(svg).not.toContain("<script>");
+		expect(svg).toContain("&#60;script&#62;&#38;&#34;");
+	});
+
+	it("scales size through viewBox and squares corners for flat", () => {
+		const lg = renderBadge({ up: false }, "en", "auto", { size: "lg", style: "flat" });
+		expect(lg).toContain('height="31"');
+		expect(lg).toContain('viewBox="0 0 ');
+		expect(lg).toContain('rx="3"');
+	});
+
+	it("recolors only the up dot, and only with a valid hex", () => {
+		expect(renderBadge({ up: true, ms: 1 }, "en", "auto", { color: "0a84ff" })).toContain(".up{fill:#0a84ff}");
+		expect(renderBadge({ up: true, ms: 1 }, "en", "auto", { color: "red;}" })).not.toContain(".up{fill:#red");
+	});
+
+	it("switches to the sans stack", () => {
+		expect(renderBadge({ up: false }, "en", "auto", { font: "sans" })).toContain('font-family="system-ui');
 	});
 
 	it("applies the requested theme", () => {

@@ -20,6 +20,12 @@ Or paste your endpoint at [status.hemk.dev](https://status.hemk.dev) and copy th
 | `url`     | —       | `https` health endpoint (required) |
 | `lang`    | `pt`    | `pt` or `en` |
 | `theme`   | `auto`  | `auto`, `light` or `dark` |
+| `style`   | `pill`  | `pill` or `flat` (small corners) |
+| `size`    | `md`    | `sm`, `md` or `lg` |
+| `label`   | —       | text before the status, up to 24 characters: `racha · online · 121 ms` |
+| `ms`      | `1`     | `0` hides the latency |
+| `color`   | green   | hex without `#` (`0a84ff`) for the "on air" dot. Grey for down never changes |
+| `font`    | `mono`  | `mono` or `sans`, both from the visitor's system |
 
 If your endpoint has its own query string, URL-encode it (`?` → `%3F`, `&` → `%26`), or its parameters are read as the badge's. The snippet from [status.hemk.dev](https://status.hemk.dev) is already encoded.
 

@@ -1,6 +1,6 @@
 import { guard } from "./guard";
 import { measure } from "./measure";
-import { renderBadge, type Lang, type Status, type Theme } from "./svg";
+import { renderBadge, type Lang, type Look, type Status, type Theme } from "./svg";
 
 const FRESH_MS = 60_000;
 // Kept past freshness so a host whose measure budget is spent still shows its last real result.
@@ -15,10 +15,19 @@ export default {
 		const lang: Lang = searchParams.get("lang") === "en" ? "en" : "pt";
 		const t = searchParams.get("theme");
 		const theme: Theme = t === "light" || t === "dark" ? t : "auto";
+		const s = searchParams.get("size");
+		const look: Partial<Look> = {
+			style: searchParams.get("style") === "flat" ? "flat" : "pill",
+			size: s === "sm" || s === "lg" ? s : "md",
+			label: searchParams.get("label") ?? "",
+			ms: searchParams.get("ms") !== "0",
+			color: searchParams.get("color") ?? undefined,
+			font: searchParams.get("font") === "sans" ? "sans" : "mono",
+		};
 		const url = guard(searchParams.get("url") ?? "");
 		const status: Status = url ? await cachedMeasure(url, env, ctx) : { up: false, invalid: true };
 
-		return new Response(renderBadge(status, lang, theme), {
+		return new Response(renderBadge(status, lang, theme, look), {
 			headers: {
 				"content-type": "image/svg+xml; charset=utf-8",
 				// GitHub's camo proxy caches README images; without this the badge freezes.
