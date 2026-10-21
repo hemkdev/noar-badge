@@ -1,4 +1,4 @@
-name: test
+name: ci
 
 on:
   push:
@@ -19,3 +19,19 @@ jobs:
       - run: npx wrangler types
       - run: npx tsc --noEmit
       - run: npx vitest run
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      # Skipped until the secrets exist, so CI stays green on forks and before setup.
+      - if: env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/checkout@v5
+      - if: env.CLOUDFLARE_API_TOKEN != ''
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
