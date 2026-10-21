@@ -23,23 +23,32 @@
 		margin: 0; background: var(--bg); color: var(--fg);
 		font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
 	}
-	main { max-width: 640px; margin: 0 auto; padding: 64px 16px; }
+	main { max-width: 640px; margin: 0 auto; padding: 48px 16px 64px; }
+	nav { display: flex; justify-content: flex-end; margin-bottom: 16px; }
 	h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.02em; }
 	h1 span { color: var(--live); }
+	h2 { font-size: 14px; font-weight: 600; margin: 0; }
 	p { color: var(--muted); margin: 0 0 32px; }
 	label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
 	input, select {
 		width: 100%; font: inherit; color: inherit; background: var(--surface);
 		border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
 	}
-	.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 32px; }
-	.preview {
-		display: flex; align-items: center; justify-content: center; min-height: 88px;
-		background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 32px;
-	}
+	input[type="color"] { padding: 4px; height: 46px; }
+	input[type="checkbox"] { width: auto; margin: 0 8px 0 0; }
+	.check { display: flex; align-items: center; height: 46px; color: var(--fg); }
+	.url { display: flex; gap: 8px; }
+	.url button { flex: none; font-size: 15px; padding: 0 18px; border-radius: 10px; }
+	.error { color: #d70015; font-size: 14px; min-height: 21px; margin: 6px 0 0; }
+	.row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin: 16px 0 32px; }
+	.preview { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+	.preview div { display: flex; align-items: center; justify-content: center; min-height: 88px; padding: 12px; }
+	.preview img { max-width: 100%; }
+	.light { background: #fff; }
+	.dark { background: #0d1117; }
+	.note { font-size: 13px; margin: 8px 0 32px; }
 	.snippet { margin-bottom: 20px; }
 	.snippet header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-	.snippet header label { margin: 0; }
 	pre {
 		margin: 0; padding: 12px; overflow-x: auto; background: var(--surface);
 		border: 1px solid var(--line); border-radius: 10px;
@@ -49,76 +58,181 @@
 		font: inherit; font-size: 13px; color: inherit; background: var(--button);
 		border: 0; border-radius: 999px; padding: 4px 12px; cursor: pointer;
 	}
+	ul { color: var(--muted); padding-left: 20px; margin: 8px 0 0; }
+	section { margin-top: 40px; }
 	footer { margin-top: 48px; font-size: 14px; color: var(--muted); }
 	footer a { color: inherit; }
 </style>
 </head>
 <body>
 <main>
+	<nav><button id="ui" type="button" aria-label="Switch to English">EN</button></nav>
 	<h1><span>●</span> noar</h1>
-	<p>Cole a URL de um endpoint de health. O selo faz um GET nela: resposta 2xx fica verde com a latência; qualquer outra coisa, cinza.</p>
+	<p data-t="intro"></p>
 
-	<label for="url">URL do health</label>
-	<input id="url" type="url" placeholder="https://api.exemplo.com/health" autocomplete="off" spellcheck="false">
-
-	<div class="row">
-		<div>
-			<label for="lang">Idioma</label>
-			<select id="lang"><option value="">Português</option><option value="en">English</option></select>
+	<form id="form" novalidate>
+		<label for="url" data-t="url"></label>
+		<div class="url">
+			<input id="url" type="url" placeholder="https://api.exemplo.com/health" autocomplete="off" spellcheck="false" aria-describedby="error">
+			<button data-t="generate"></button>
 		</div>
-		<div>
-			<label for="theme">Tema</label>
-			<select id="theme">
-				<option value="">Automático</option><option value="light">Claro</option><option value="dark">Escuro</option>
-			</select>
-		</div>
-	</div>
+		<p id="error" class="error" aria-live="polite"></p>
 
-	<div class="preview"><img id="badge" src="/badge?url=https://racha.hemk.dev/health/" alt="status"></div>
+		<div class="row">
+			<div><label for="lang" data-t="lang"></label><select id="lang"><option value="">Português</option><option value="en">English</option></select></div>
+			<div><label for="theme" data-t="theme"></label><select id="theme"><option value="" data-t="auto"></option><option value="light" data-t="light"></option><option value="dark" data-t="dark"></option></select></div>
+			<div><label for="style" data-t="style"></label><select id="style"><option value="" data-t="pill"></option><option value="flat" data-t="flat"></option></select></div>
+			<div><label for="size" data-t="size"></label><select id="size"><option value="sm" data-t="sm"></option><option value="" selected data-t="md"></option><option value="lg" data-t="lg"></option></select></div>
+			<div><label for="font" data-t="font"></label><select id="font"><option value="">Mono</option><option value="sans">Sans</option></select></div>
+			<div><label for="color" data-t="color"></label><input id="color" type="color" value="#34c759"></div>
+			<div><label for="label" data-t="label"></label><input id="label" maxlength="24" autocomplete="off" placeholder="racha"></div>
+			<div><label class="check"><input id="ms" type="checkbox" checked><span data-t="ms"></span></label></div>
+		</div>
+	</form>
+
+	<div class="preview"><div class="light"><img id="badge-light" alt="status"></div><div class="dark"><img id="badge-dark" alt="status"></div></div>
+	<p class="note" id="note"></p>
 
 	<div class="snippet">
-		<header><label>Markdown</label><button data-copy="md">Copiar</button></header>
+		<header><h2>Markdown</h2><button data-copy="md" data-t="copy"></button></header>
 		<pre id="md"></pre>
 	</div>
 	<div class="snippet">
-		<header><label>HTML</label><button data-copy="html">Copiar</button></header>
+		<header><h2>HTML</h2><button data-copy="html" data-t="copy"></button></header>
 		<pre id="html"></pre>
 	</div>
+	<p class="note" id="copied" aria-live="polite"></p>
 
-	<footer>Só https e nada de localhost ou IP. Resultado em cache por ~60 s por URL, no máximo 10 medições por minuto por host. <a href="https://github.com/hemkdev/noar-badge">Código-fonte</a>.</footer>
+	<section>
+		<h2 data-t="whatTitle"></h2>
+		<ul>
+			<li data-t="what1"></li>
+			<li data-t="what2"></li>
+			<li data-t="what3"></li>
+			<li data-t="what4"></li>
+		</ul>
+	</section>
+
+	<footer><span data-t="footer"></span> <a href="https://github.com/hemkdev/noar-badge" data-t="source"></a> · <a href="https://hemk.dev">by hemk</a></footer>
 </main>
 <script>
 	const $ = (id) => document.getElementById(id);
 	const example = "https://racha.hemk.dev/health/";
+	const GREEN = "#34c759";
+	const T = {
+		pt: {
+			intro: "Cole a URL de um endpoint de health e copie o selo. Ele faz um GET nela: resposta 2xx fica verde com a latência; qualquer outra coisa, cinza.",
+			url: "URL do health", generate: "Gerar", lang: "Idioma do selo", theme: "Tema",
+			auto: "Automático", light: "Claro", dark: "Escuro", style: "Formato", pill: "Pílula", flat: "Reto",
+			size: "Tamanho", sm: "Pequeno", md: "Médio", lg: "Grande", font: "Fonte", color: "Cor do “no ar”",
+			label: "Rótulo (opcional)", ms: "Mostrar latência", copy: "Copiar", copied: "Copiado", copyFail: "Não deu pra copiar. Selecione o texto e copie à mão.",
+			invalid: "Use uma URL https, sem localhost nem IP.", example: "Exemplo com racha.hemk.dev. Gere o seu acima.", yours: "Fundo claro e escuro, como num README.",
+			whatTitle: "O que o selo mede",
+			what1: "Um GET na URL, seguindo até 3 redirecionamentos, com 5 s de limite. 2xx é “no ar”, com a latência.",
+			what2: "Qualquer outra resposta, ou nenhuma, é “indisponível”. URL que não é https, localhost ou IP é “url inválida”, sem medir.",
+			what3: "Resultado em cache por ~60 s por URL, no máximo 10 medições por minuto por host.",
+			what4: "Mede quando alguém vê o selo, a partir da Cloudflare mais próxima. Não é monitor: não guarda histórico.",
+			footer: "Grátis, sem garantia.", source: "Código-fonte", switchTo: "Switch to English",
+		},
+		en: {
+			intro: "Paste a health endpoint URL and copy the badge. It sends a GET there: a 2xx shows green with the latency; anything else, grey.",
+			url: "Health URL", generate: "Generate", lang: "Badge language", theme: "Theme",
+			auto: "Automatic", light: "Light", dark: "Dark", style: "Shape", pill: "Pill", flat: "Flat",
+			size: "Size", sm: "Small", md: "Medium", lg: "Large", font: "Font", color: "“Online” color",
+			label: "Label (optional)", ms: "Show latency", copy: "Copy", copied: "Copied", copyFail: "Couldn't copy. Select the text and copy it by hand.",
+			invalid: "Use an https URL, no localhost or IP.", example: "Example with racha.hemk.dev. Generate yours above.", yours: "Light and dark background, like in a README.",
+			whatTitle: "What the badge measures",
+			what1: "A GET to the URL, following up to 3 redirects, with a 5 s limit. 2xx is “online”, with the latency.",
+			what2: "Any other response, or none, is “unavailable”. A non-https, localhost or IP URL is “invalid url”, without measuring.",
+			what3: "Results cached for ~60 s per URL, at most 10 measurements per minute per host.",
+			what4: "Measured when someone views the badge, from the nearest Cloudflare location. Not a monitor: no history.",
+			footer: "Free, best effort.", source: "Source code", switchTo: "Mudar para português",
+		},
+	};
+	let ui = navigator.language.startsWith("pt") ? "pt" : "en";
+	let target = "";
+
+	function translate() {
+		document.documentElement.lang = ui === "pt" ? "pt-BR" : "en";
+		document.querySelectorAll("[data-t]").forEach((el) => (el.textContent = T[ui][el.dataset.t]));
+		$("ui").textContent = ui === "pt" ? "EN" : "PT";
+		$("ui").setAttribute("aria-label", T[ui].switchTo);
+		$("note").textContent = target ? T[ui].yours : T[ui].example;
+		if ($("error").textContent) $("error").textContent = T[ui].invalid;
+	}
+
+	function valid(raw) {
+		try {
+			const { protocol, hostname } = new URL(raw);
+			return protocol === "https:" && hostname !== "localhost" && !/^[\d.]+$|^\[/.test(hostname);
+		} catch {
+			return false;
+		}
+	}
 
 	function badgeUrl() {
 		// Only "&" and "#" inside the target really need escaping; keep ":" and "/" readable.
 		// encodeURIComponent leaves "(" and ")", and a ")" would end the Markdown link early.
-		const url = encodeURIComponent($("url").value.trim() || example)
+		const url = encodeURIComponent(target || example)
 			.replace(/%3A/g, ":")
 			.replace(/%2F/g, "/")
 			.replace(/\(/g, "%28")
 			.replace(/\)/g, "%29");
-		const lang = $("lang").value ? `&lang=${$("lang").value}` : "";
-		const theme = $("theme").value ? `&theme=${$("theme").value}` : "";
-		return `${location.origin}/badge?url=${url}${lang}${theme}`;
+		const q = new URLSearchParams();
+		for (const id of ["lang", "theme", "style", "size", "font"]) if ($(id).value) q.set(id, $(id).value);
+		if ($("label").value.trim()) q.set("label", $("label").value.trim());
+		if (!$("ms").checked) q.set("ms", "0");
+		if ($("color").value !== GREEN) q.set("color", $("color").value.slice(1));
+		const rest = q.toString().replace(/\(/g, "%28").replace(/\)/g, "%29");
+		return `${location.origin}/badge?url=${url}${rest ? `&${rest}` : ""}`;
 	}
 
 	function update() {
 		const src = badgeUrl();
-		$("badge").src = src;
-		$("md").textContent = `![status](${src})`;
-		$("html").textContent = `<img src="${src.replaceAll("&", "&amp;")}" alt="status">`;
+		const link = (target || example).replace(/\(/g, "%28").replace(/\)/g, "%29");
+		// "auto" follows the viewer's OS, so each half previews the theme a README of that color would get.
+		const auto = !$("theme").value;
+		$("badge-light").src = auto ? `${src}&theme=light` : src;
+		$("badge-dark").src = auto ? `${src}&theme=dark` : src;
+		$("md").textContent = `[![status](${src})](${link})`;
+		$("html").textContent = `<a href="${link}"><img src="${src.replaceAll("&", "&amp;")}" alt="status"></a>`;
+		$("note").textContent = target ? T[ui].yours : T[ui].example;
 	}
 
-	["url", "lang", "theme"].forEach((id) => $(id).addEventListener("change", update));
+	$("form").addEventListener("submit", (event) => {
+		event.preventDefault();
+		const raw = $("url").value.trim();
+		if (!valid(raw)) {
+			$("error").textContent = T[ui].invalid;
+			$("url").setAttribute("aria-invalid", "true");
+			return;
+		}
+		$("error").textContent = "";
+		$("url").removeAttribute("aria-invalid");
+		target = raw;
+		update();
+	});
+	// Not on every keystroke: each new badge URL is a request to someone's site.
+	["lang", "theme", "style", "size", "font", "color", "label", "ms"].forEach((id) => $(id).addEventListener("change", update));
+	$("ui").addEventListener("click", () => {
+		ui = ui === "pt" ? "en" : "pt";
+		translate();
+	});
 	document.querySelectorAll("[data-copy]").forEach((button) => {
 		button.addEventListener("click", async () => {
-			await navigator.clipboard.writeText($(button.dataset.copy).textContent);
-			button.textContent = "Copiado";
-			setTimeout(() => (button.textContent = "Copiar"), 1500);
+			try {
+				await navigator.clipboard.writeText($(button.dataset.copy).textContent);
+				$("copied").textContent = T[ui].copied;
+				setTimeout(() => ($("copied").textContent = ""), 1500);
+				button.textContent = T[ui].copied;
+				setTimeout(() => (button.textContent = T[ui].copy), 1500);
+			} catch {
+				$("copied").textContent = T[ui].copyFail;
+			}
 		});
 	});
+	if (ui === "en") $("lang").value = "en";
+	translate();
 	update();
 </script>
 </body>
