@@ -93,7 +93,12 @@
 
 	function badgeUrl() {
 		// Only "&" and "#" inside the target really need escaping; keep ":" and "/" readable.
-		const url = encodeURIComponent($("url").value.trim() || example).replace(/%3A/g, ":").replace(/%2F/g, "/");
+		// encodeURIComponent leaves "(" and ")", and a ")" would end the Markdown link early.
+		const url = encodeURIComponent($("url").value.trim() || example)
+			.replace(/%3A/g, ":")
+			.replace(/%2F/g, "/")
+			.replace(/\(/g, "%28")
+			.replace(/\)/g, "%29");
 		const lang = $("lang").value ? `&lang=${$("lang").value}` : "";
 		const theme = $("theme").value ? `&theme=${$("theme").value}` : "";
 		return `${location.origin}/badge?url=${url}${lang}${theme}`;

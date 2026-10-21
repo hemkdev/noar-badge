@@ -23,6 +23,8 @@ Or paste your endpoint at [status.hemk.dev](https://status.hemk.dev) and copy th
 | `lang`    | `pt`    | `pt` or `en` |
 | `theme`   | `auto`  | `auto`, `light` or `dark` |
 
+If your endpoint has its own query string, URL-encode it (`?` → `%3F`, `&` → `%26`), or its parameters are read as the badge's. The snippet from [status.hemk.dev](https://status.hemk.dev) is already encoded.
+
 A 2xx response shows green with the latency. Anything else shows grey `indisponível` / `unavailable`. A missing, non-https, localhost or IP target shows grey `url inválida` / `invalid url` without being measured.
 
 ### Example with all parameters:
