@@ -50,6 +50,8 @@ A 2xx response shows green with the latency. Anything else shows grey `indispon√
 npm ci && npm run dev
 ```
 
+Types for `env` are generated from `wrangler.jsonc` and not committed. Run `npm run cf-typegen` before `npx tsc --noEmit`; `npm run dev` and `npm test` work without it.
+
 ## Contribution
 
 Contributions are welcome! Feel free to open an issue or submit a pull request if you have a way to improve this project.
