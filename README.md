@@ -4,8 +4,9 @@
 
 A live status badge for your README or website. It sends a `GET` to your health endpoint and shows whether the app is on air and how fast it answered.
 
-[![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/)](https://racha.hemk.dev)
-[![status](https://status.hemk.dev/badge?url=https://hemk.dev/&lang=en&theme=dark)](https://hemk.dev)
+[![status](https://status.hemk.dev/badge?url=https://hemk.dev/&lang=en)](https://hemk.dev)
+[![status](https://status.hemk.dev/badge?url=https://hemk.dev/&lang=en&label=hemk.dev&style=flat)](https://hemk.dev)
+[![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/&label=racha&size=sm)](https://racha.hemk.dev)
 
 ## Usage
 
@@ -34,14 +35,36 @@ A 2xx response shows green with the latency. Anything else shows grey `indisponÃ
 ### Example with all parameters:
 
 ```markdown
-[![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/&lang=en&theme=dark)](https://racha.hemk.dev)
+[![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/&lang=en&theme=dark&style=flat&size=lg&label=racha&color=0a84ff&font=sans)](https://racha.hemk.dev)
 ```
 
 ### Output:
 
-[![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/&lang=en&theme=dark)](https://racha.hemk.dev)
+[![status](https://status.hemk.dev/badge?url=https://racha.hemk.dev/health/&lang=en&theme=dark&style=flat&size=lg&label=racha&color=0a84ff&font=sans)](https://racha.hemk.dev)
 
-> **Note:** results are cached for ~60 s per URL, with at most 10 measurements per minute per host. `localhost` and IP addresses are rejected. Inside an image, `auto` follows the visitor's OS, not GitHub's theme.
+The latency is the endpoint's own: an app whose database sleeps when idle, like this one, can show a few seconds on the first view.
+
+> **Note:** results are cached for ~60 s per URL, with at most 10 measurements per minute per host. `localhost` and IP addresses are rejected.
+
+### Light and dark on GitHub
+
+Inside an image, `theme=auto` follows the visitor's OS, not GitHub's theme. To match GitHub, pick the theme with `<picture>`:
+
+```html
+<a href="https://your.app">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://status.hemk.dev/badge?url=https://your.app/health&theme=dark">
+    <img alt="status" src="https://status.hemk.dev/badge?url=https://your.app/health&theme=light">
+  </picture>
+</a>
+```
+
+<a href="https://hemk.dev">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://status.hemk.dev/badge?url=https://hemk.dev/&lang=en&theme=dark">
+    <img alt="status" src="https://status.hemk.dev/badge?url=https://hemk.dev/&lang=en&theme=light">
+  </picture>
+</a>
 
 ## What it is, and what it isn't
 
