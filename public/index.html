@@ -195,7 +195,7 @@
 		$("badge-light").src = auto ? `${src}&theme=light` : src;
 		$("badge-dark").src = auto ? `${src}&theme=dark` : src;
 		$("md").textContent = `[![status](${src})](${link})`;
-		$("html").textContent = `<a href="${link}"><img src="${src.replaceAll("&", "&amp;")}" alt="status"></a>`;
+		$("html").textContent = `<a href="${link.replaceAll("&", "&amp;")}"><img src="${src.replaceAll("&", "&amp;")}" alt="status"></a>`;
 		$("note").textContent = target ? T[ui].yours : T[ui].example;
 	}
 
@@ -209,7 +209,7 @@
 		}
 		$("error").textContent = "";
 		$("url").removeAttribute("aria-invalid");
-		target = raw;
+		target = new URL(raw).href;
 		update();
 	});
 	// Not on every keystroke: each new badge URL is a request to someone's site.

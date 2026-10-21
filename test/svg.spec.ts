@@ -24,6 +24,11 @@ describe("badgeText look", () => {
 		expect(badgeText({ up: false }, "en", { label: "x".repeat(30) })).toBe(`${"x".repeat(24)} · unavailable`);
 	});
 
+	it("drops control characters and blank labels", () => {
+		expect(badgeText({ up: false }, "en", { label: "a\u0001b" })).toBe("ab · unavailable");
+		expect(badgeText({ up: false }, "en", { label: "   " })).toBe("unavailable");
+	});
+
 	it("hides latency when ms is off", () => {
 		expect(badgeText({ up: true, ms: 120 }, "pt", { ms: false })).toBe("no ar");
 	});

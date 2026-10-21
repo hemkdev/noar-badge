@@ -59,7 +59,8 @@ export function badgeText(status: Status, lang: Lang, look: Partial<Look> = {}):
 		: status.invalid
 			? LABELS[lang].invalid
 			: LABELS[lang].down;
-	const name = [...label].slice(0, MAX_LABEL).join("");
+	// Control characters are invalid in XML and would break the whole SVG.
+	const name = [...label.replace(/[\u0000-\u001f\u007f]/g, "").trim()].slice(0, MAX_LABEL).join("");
 	return name ? `${name} · ${state}` : state;
 }
 
